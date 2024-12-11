@@ -59,14 +59,14 @@ public class MiPerfilActivity extends AppCompatActivity {
                     textViewNombrePerfil.setText("Nombre: " + nombre);
 
                     referenciaFirebase.child("nombre").setValue(nombre).addOnSuccessListener(aVoid ->
-                            Toast.makeText(MiPerfilActivity.this, "Nombre guardado correctamente", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(MiPerfilActivity.this, "Nombre Guardado Correctamente", Toast.LENGTH_SHORT).show()
                     ).addOnFailureListener(e ->
-                            Toast.makeText(MiPerfilActivity.this, "Error al guardar el nombre", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(MiPerfilActivity.this, "Error Al Guardar El Nombre", Toast.LENGTH_SHORT).show()
                     );
 
                     editTextNombrePerfil.setText("");
                 } else {
-                    Toast.makeText(MiPerfilActivity.this, "Por favor ingresa un nombre", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MiPerfilActivity.this, "Por Favor Ingresa Un Nombre", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -81,14 +81,14 @@ public class MiPerfilActivity extends AppCompatActivity {
                             .into(imageViewPerfil);
 
                     referenciaFirebase.child("urlImagen").setValue(url).addOnSuccessListener(aVoid ->
-                            Toast.makeText(MiPerfilActivity.this, "Imagen guardada correctamente", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(MiPerfilActivity.this, "Imagen Guardada Correctamente", Toast.LENGTH_SHORT).show()
                     ).addOnFailureListener(e ->
-                            Toast.makeText(MiPerfilActivity.this, "Error al guardar la imagen", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(MiPerfilActivity.this, "Error Al Guardar La Imagen", Toast.LENGTH_SHORT).show()
                     );
 
                     editTextUrlImagen.setText("");
                 } else {
-                    Toast.makeText(MiPerfilActivity.this, "Por favor ingresa una URL", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MiPerfilActivity.this, "Por Favor Ingresa Una URL", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -98,7 +98,6 @@ public class MiPerfilActivity extends AppCompatActivity {
         referenciaFirebase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                // Recuperar y mostrar el nombre
                 if (snapshot.hasChild("nombre")) {
                     String nombre = snapshot.child("nombre").getValue(String.class);
                     textViewNombrePerfil.setText("Nombre: " + nombre);
@@ -114,7 +113,7 @@ public class MiPerfilActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(MiPerfilActivity.this, "Error al cargar datos", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MiPerfilActivity.this, "Error Al Cargar Datos", Toast.LENGTH_SHORT).show();
             }
         });
     }
