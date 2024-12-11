@@ -6,14 +6,21 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class MenuPrincipalActivity extends AppCompatActivity {
 
     private Button btnCerrarSesion, btnMisContactos, btnIniciarConversacion, btnMiPerfil;
     private FirebaseAuth auth;
     private String usuarioEmail;
+    private DatabaseReference referenciaFirebase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,8 +28,15 @@ public class MenuPrincipalActivity extends AppCompatActivity {
         setContentView(R.layout.activity_menu_principal);
 
         auth = FirebaseAuth.getInstance();
+        referenciaFirebase = FirebaseDatabase.getInstance().getReference("usuarios");
 
         usuarioEmail = getIntent().getStringExtra("usuarioEmail");
+
+        if (usuarioEmail == null || usuarioEmail.isEmpty()) {
+            if (auth.getCurrentUser() != null) {
+                usuarioEmail = auth.getCurrentUser().getEmail();
+            }
+        }
 
         if (usuarioEmail == null || usuarioEmail.isEmpty()) {
             Toast.makeText(this, "Error: Usuario No Identificado", Toast.LENGTH_SHORT).show();
@@ -34,6 +48,15 @@ public class MenuPrincipalActivity extends AppCompatActivity {
         Log.d("MenuPrincipalActivity", "Usuario Actual: " + usuarioEmail);
 
         btnCerrarSesion = findViewById(R.id.btnCerrarSesion);
+        btnMisContactos = findViewById(R.id.btnMisContactos);
+        btnIniciarConversacion = findViewById(R.id.btnIniciarConversacion);
+        btnMiPerfil = findViewById(R.id.btnMiPerfil);
+
+        configurarBotones();
+    }
+
+    private void configurarBotones() {
+        // Botón para cerrar sesión
         btnCerrarSesion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -48,54 +71,61 @@ public class MenuPrincipalActivity extends AppCompatActivity {
             }
         });
 
-        btnMisContactos = findViewById(R.id.btnMisContactos);
         btnMisContactos.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (usuarioEmail == null || usuarioEmail.isEmpty()) {
-                    Toast.makeText(MenuPrincipalActivity.this, "Error: Usuario No Identificado", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                Log.d("MenuPrincipalActivity", "Navegando a MisContactosActivity con Usuario: " + usuarioEmail);
-
-                Intent intent = new Intent(MenuPrincipalActivity.this, MisContactosActivity.class);
-                intent.putExtra("usuarioEmail", usuarioEmail);
-                startActivity(intent);
+                navegarAActividad(MisContactosActivity.class);
             }
         });
 
-        btnIniciarConversacion = findViewById(R.id.btnIniciarConversacion);
         btnIniciarConversacion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (usuarioEmail == null || usuarioEmail.isEmpty()) {
-                    Toast.makeText(MenuPrincipalActivity.this, "Error: Usuario No Identificado", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                Log.d("MenuPrincipalActivity", "Navegando a IniciarConversacionActivity Con Usuario: " + usuarioEmail);
-
-                Intent intent = new Intent(MenuPrincipalActivity.this, IniciarConversacionActivity.class);
-                intent.putExtra("usuarioEmail", usuarioEmail);
-                startActivity(intent);
+                navegarAActividad(IniciarConversacionActivity.class);
             }
         });
 
-        btnMiPerfil = findViewById(R.id.btnMiPerfil);
         btnMiPerfil.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (usuarioEmail == null || usuarioEmail.isEmpty()) {
-                    Toast.makeText(MenuPrincipalActivity.this, "Error: Usuario No Identificado.", Toast.LENGTH_SHORT).show();
-                    return;
+                navegarAActividad(MiPerfilActivity.class);
+            }
+        });
+    }
+
+    private void navegarAActividad(Class<?> actividadDestino) {
+        if (usuarioEmail == null || usuarioEmail.isEmpty()) {
+            Toast.makeText(this, "Error: Usuario No Identificado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d("MenuPrincipalActivity", "Navegando a " + actividadDestino.getSimpleName() + " con Usuario: " + usuarioEmail);
+
+        Intent intent = new Intent(MenuPrincipalActivity.this, actividadDestino);
+        intent.putExtra("usuarioEmail", usuarioEmail);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        recuperarDatosUsuario();
+    }
+
+    private void recuperarDatosUsuario() {
+        referenciaFirebase.child(auth.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Log.d("MenuPrincipalActivity", "Datos de usuario cargados correctamente.");
+                } else {
+                    Log.e("MenuPrincipalActivity", "No se encontraron datos para el usuario.");
                 }
+            }
 
-                Log.d("MenuPrincipalActivity", "Navegando a MiPerfilActivity Con Usuario: " + usuarioEmail);
-
-                Intent intent = new Intent(MenuPrincipalActivity.this, MiPerfilActivity.class);
-                intent.putExtra("usuarioEmail", usuarioEmail);
-                startActivity(intent);
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("MenuPrincipalActivity", "Error al recuperar datos: " + error.getMessage());
             }
         });
     }
